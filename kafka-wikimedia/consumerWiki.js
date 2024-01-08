@@ -1,4 +1,6 @@
 const { Kafka, logLevel } = require("kafkajs");
+const esClient = require("./elasticSearch/client");
+const { insertBulkWiki } = require("./elasticSearch/insertDoc");
 
 const partition = 0;
 let topic = "wikimedia.recentchange";
@@ -13,10 +15,6 @@ const consumerService = async () => {
     const consumer = kafka.consumer({
       groupId: "wiki-group-consumer",
       enableAutoCommit: false,
-      batch: {
-        // Thêm cấu hình batch vào đây
-        size: 10, // Kích thước batch mong muốn
-      },
     });
 
     // consumer connect
@@ -28,10 +26,24 @@ const consumerService = async () => {
       fromBeginning: true,
     });
 
+    const indexName = "wikimedia";
+    const indexExisted = await esClient.indices.exists({
+      index: indexName,
+    });
+
+    if (!indexExisted) {
+      await createIndex(indexName);
+      console.log("create index success");
+    } else {
+      console.log("index alredy existed");
+    }
+
     // listen message
     await consumer.run({
       eachBatch: async ({ batch, resolveOffset, heartbeat, isRunning }) => {
         console.log(`receiver ${batch.messages.length}`);
+
+        insertBulkWiki(indexName, batch.messages);
 
         // Commit the offset after processing the batch
         await consumer.commitOffsets([

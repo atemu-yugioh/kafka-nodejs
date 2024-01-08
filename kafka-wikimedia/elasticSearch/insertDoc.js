@@ -12,13 +12,11 @@ const insertBulkWiki = (indexName, documents) => {
 
   // Duyệt qua mảng tài liệu và thêm các lệnh index và tài liệu vào body
   documents.forEach((document) => {
-    body.push({ index: { _index: indexName } });
+    body.push({ index: { _index: indexName, _id: document.meta.id } });
     body.push(document);
   });
 
-  const response = esClient.bulk({ body });
-
-  return response;
+  return esClient.bulk({ body });
 };
 
 module.exports = { insertDoc, insertBulkWiki };
