@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "elasticsearch": "^16.7.3",
+    "eventsource": "^2.0.2",
+    "kafkajs": "^2.2.4",
+    "log4js": "^6.9.1"
+  }
+}
