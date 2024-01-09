@@ -1,34 +1,44 @@
 const { Kafka, logLevel } = require("kafkajs");
 
-const consumerService = async () => {
+const kafkaConsumer = async () => {
+  // step 1: create kafka client
   const kafka = new Kafka({
-    clientId: "my-local-kafka",
+    clientId: "basic-kafka",
     brokers: ["localhost:9092"],
     logLevel: logLevel.NOTHING,
   });
-  try {
-    const consumer = kafka.consumer({ groupId: "test-group-consumer" });
 
-    // consumer connect
+  // step 2: create kafka consumer
+  const consumer = kafka.consumer({ groupId: "basic-kafka-consumer" });
+
+  try {
+    // step 3: consumer connect
     await consumer.connect();
 
-    // subscribe to topic
-    await consumer.subscribe({
-      topic: "wikimedia.recentchange",
+    // step 4: consumer subscribe to topic
+    consumer.subscribe({
+      topic: "basic-topic",
       fromBeginning: true,
     });
 
-    // listen message
+    // step 5: listen message
     await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ message, partition, topic }) => {
         console.log({
           value: message.value.toString(),
+          offset: message.offset,
+          timestamp: message.timestamp,
+          size: message.size,
         });
       },
     });
+
+    await new Promise((resolve) => setTimeout(resolve, 600000));
   } catch (error) {
     console.log(error);
+  } finally {
+    consumer.disconnect();
   }
 };
 
-consumerService().catch((error) => console.log(error));
+kafkaConsumer();
