@@ -23,6 +23,7 @@ async function main() {
       console.log(eventData);
 
       // send to Kafka
+
       await producer.send({
         topic: topic,
         messages: [{ value: eventData }],

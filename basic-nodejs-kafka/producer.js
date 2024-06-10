@@ -17,6 +17,7 @@ const kafkaProducer = async () => {
 
     for (let index = 0; index < 100; index++) {
       // step 4: send message to topic
+
       await producer.send({
         topic: "basic-topic",
         messages: [
